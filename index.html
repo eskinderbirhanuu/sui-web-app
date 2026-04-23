@@ -98,13 +98,13 @@
 
     <div class="game-layout">
         <div class="side-menu">
-            <div class="menu-icon-btn" onclick="tgAlert('Gift')">
+            <div class="menu-icon-btn">
                 <i class="fas fa-gift"></i><span>Gift</span>
             </div>
-            <div class="menu-icon-btn" onclick="tgAlert('Leaderboard')">
+            <div class="menu-icon-btn">
                 <i class="fas fa-trophy"></i><span>Rank</span>
             </div>
-            <div class="menu-icon-btn" onclick="tgAlert('Team')">
+            <div class="menu-icon-btn">
                 <i class="fas fa-users"></i><span>Team</span>
             </div>
         </div>
@@ -115,13 +115,13 @@
         </div>
 
         <div class="side-menu">
-            <div class="menu-icon-btn" onclick="tgAlert('Spins')">
+            <div class="menu-icon-btn">
                 <i class="fas fa-sync-alt"></i><span>Spins</span>
             </div>
-            <div class="menu-icon-btn" onclick="tgAlert('Sign In')">
+            <div class="menu-icon-btn">
                 <i class="fas fa-calendar-check"></i><span>Sign In</span>
             </div>
-            <div class="menu-icon-btn" style="background: #ffcc00;" onclick="tgAlert('Wallet')">
+            <div class="menu-icon-btn" style="background: #ffcc00;">
                 <i class="fas fa-wallet"></i><span>Wallet</span>
             </div>
         </div>
@@ -138,10 +138,6 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
         document.getElementById('user-name').innerText = tg.initDataUnsafe.user?.first_name || "Player";
-
-        function tgAlert(msg) {
-            tg.showAlert(msg + " feature coming soon!");
-        }
 
         let rotation = 0;
         function spinNow() {
@@ -162,7 +158,7 @@
         }
 
         function invite() {
-            tg.openTelegramLink("https://t.me/share/url?url=https://t.me/SuiGlobalRewardsBot/app&text=Join me!");
+            tg.openTelegramLink("https://t.me/share/url?url=https://t.me/SuiGlobalRewardsBot/app&text=Join me and win SUI!");
         }
     </script>
 </body>
