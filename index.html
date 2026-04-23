@@ -5,96 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            background: linear-gradient(180deg, #1a4d2e 0%, #0d2a1a 100%);
-            color: white; font-family: 'Arial Rounded MT Bold', sans-serif;
-            margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh;
-        }
-        .header { width: 90%; display: flex; justify-content: space-between; margin-top: 20px; }
-        .user-info { background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; display: flex; align-items: center; }
-        
-        .balance-card {
-            background: rgba(255, 255, 255, 0.1); border: 2px solid #ffcc00;
-            border-radius: 15px; padding: 10px 30px; margin: 20px 0; text-align: center;
-        }
-        .usd-amount { font-size: 32px; color: #ffcc00; font-weight: bold; }
-
-        /* The Spin Wheel */
-        .wheel-container { position: relative; width: 280px; height: 280px; margin-top: 20px; }
-        .wheel {
-            width: 100%; height: 100%; border-radius: 50%; border: 8px solid #ffcc00;
-            background: conic-gradient(#ff4d4d 0deg 45deg, #4dff88 45deg 90deg, #4d94ff 90deg 135deg, #ffff4d 135deg 180deg, #ff4dff 180deg 225deg, #ff944d 225deg 270deg, #4dffff 270deg 315deg, #ffffff 315deg 360deg);
-            transition: transform 4s cubic-bezier(0.17, 0.67, 0.1, 1);
-            box-shadow: 0 0 30px rgba(255, 204, 0, 0.5);
-        }
-        .pointer {
-            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
-            width: 30px; height: 40px; background: #ffcc00; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 10;
-        }
-        .spin-btn {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 70px; height: 70px; background: #000; border: 4px solid #ffcc00;
-            border-radius: 50%; color: #ffcc00; font-weight: bold; cursor: pointer; z-index: 11;
-        }
-
-        .footer-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 90%; margin-top: 30px; }
-        .action-btn { background: #28a745; border: none; padding: 15px; border-radius: 12px; color: white; font-weight: bold; box-shadow: 0 4px #1a632b; }
+        body { background: radial-gradient(circle, #1a4d2e, #051a0b); color: white; font-family: 'Arial', sans-serif; text-align: center; margin: 0; overflow: hidden; }
+        .header { display: flex; justify-content: space-around; padding: 15px; background: rgba(0,0,0,0.4); border-bottom: 2px solid #ffcc00; }
+        .stat-box { background: #000; padding: 8px 12px; border-radius: 12px; border: 1px solid #4dff88; box-shadow: 0 0 10px rgba(77,255,136,0.2); }
+        .wheel-container { position: relative; margin: 30px auto; width: 280px; height: 280px; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #ffcc00; transition: transform 4s cubic-bezier(0.2, 0, 0.1, 1); background: conic-gradient(#ff4d4d 0deg 45deg, #4dff88 45deg 90deg, #4d94ff 90deg 135deg, #ffff4d 135deg 180deg, #ff4dff 180deg 225deg, #ff944d 225deg 270deg, #4dffff 270deg 315deg, #ffffff 315deg 360deg); }
+        .spin-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75px; height: 75px; border-radius: 50%; background: gold; border: 4px solid #1a4d2e; font-weight: bold; cursor: pointer; z-index: 10; box-shadow: 0 0 20px #ffcc00; }
+        .footer { position: fixed; bottom: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .action-btn { background: #28a745; color: white; padding: 14px; border: none; border-radius: 12px; width: 85%; font-weight: bold; margin-bottom: 10px; font-size: 16px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="user-info" id="user-name">👤 Player</div>
-        <div class="user-info">💎 <span id="gems">10</span></div>
-    </div>
-
-    <div class="balance-card">
-        <div style="font-size: 14px; opacity: 0.8;">Current Earnings</div>
-        <div class="usd-amount">$<span id="bal">0.000</span></div>
+        <div class="stat-box">💰 $<span id="balance">0.000</span></div>
+        <div class="stat-box">💎 <span id="gems">0</span></div>
+        <div class="stat-box">🎟️ <span id="spins">3</span></div>
     </div>
 
     <div class="wheel-container">
-        <div class="pointer"></div>
         <div class="wheel" id="wheel"></div>
-        <button class="spin-btn" onclick="spin()">SPIN</button>
+        <button class="spin-btn" onclick="handleSpin()">SPIN</button>
     </div>
 
-    <div class="footer-btns">
-        <button class="action-btn" onclick="openTasks()">📋 TASKS</button>
-        <button class="action-btn" style="background:#ffcc00; color:black; box-shadow: 0 4px #b38f00;" onclick="withdraw()">💰 WALLET</button>
+    <div class="footer">
+        <button class="action-btn" onclick="invite()">👥 INVITE (1 SPIN PER FRIEND)</button>
+        <button class="action-btn" style="background:#ffcc00; color:black;" onclick="requestWithdraw()">🏦 WITHDRAW (5 SUI)</button>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand();
-        document.getElementById('user-name').innerText = "👤 " + (tg.initDataUnsafe.user?.first_name || "Guest");
+        let balance = 0.000;
+        let gems = 0;
+        let spins = 3;
+        let spinCount = 0;
+        let rotation = 0;
 
-        let currentRotation = 0;
-        function spin() {
-            let gems = parseInt(document.getElementById('gems').innerText);
-            if(gems < 1) {
-                tg.showAlert("Not enough Gems! Complete tasks to get more spins.");
+        // Big Win መጠኖች በራንደም እንዲመጡ
+        const bigWins = [0.44, 0.14, 0.20, 0.18];
+        
+        function handleSpin() {
+            if (spins <= 0) {
+                tg.showAlert("No spins left! Invite 1 friend to get 1 SPIN.");
                 return;
             }
+
+            spins--;
+            spinCount++;
+            document.getElementById('spins').innerText = spins;
             
-            document.getElementById('gems').innerText = gems - 1;
-            let addedRotation = Math.floor(Math.random() * 360) + 1800; // 5 full spins
-            currentRotation += addedRotation;
-            document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+            rotation += 1800 + Math.floor(Math.random() * 360);
+            document.getElementById('wheel').style.transform = `rotate(${rotation}deg)`;
 
             setTimeout(() => {
-                let win = (Math.random() * 0.05).toFixed(3);
-                let currentBal = parseFloat(document.getElementById('bal').innerText);
-                document.getElementById('bal').innerText = (currentBal + parseFloat(win)).toFixed(3);
-                tg.showAlert("Congratulations! You won $" + win);
-            }, 4100);
+                let prizeMsg = "";
+                let luck = Math.random();
+
+                // ሎጂኩን በራንደም እና ባላንሱ ላይ ተመስርተን እናስተካክላለን
+                if (spinCount <= 4 && luck > 0.3) {
+                    let win = bigWins[Math.floor(Math.random() * bigWins.length)];
+                    balance += win;
+                    prizeMsg = `BIG WIN! You won $${win}!`;
+                } else {
+                    if (balance >= 3.60) {
+                        // ባላንሱ ሲጨምር የማሸነፍ እድል ይቀንሳል
+                        if (luck < 0.05) { balance += 0.005; prizeMsg = "You won $0.005!"; }
+                        else if (luck < 0.4) { gems += 40; prizeMsg = "You won 40 Gems!"; }
+                        else if (luck < 0.5) { spins += 2; prizeMsg = "Lucky! +2 Spins!"; }
+                        else { prizeMsg = "Empty! Better luck next time."; }
+                    } else {
+                        if (luck < 0.3) { balance += 0.015; prizeMsg = "You won $0.015!"; }
+                        else if (luck < 0.7) { gems += 80; prizeMsg = "You won 80 Gems!"; }
+                        else { prizeMsg = "Empty!"; }
+                    }
+                }
+
+                document.getElementById('balance').innerText = balance.toFixed(3);
+                document.getElementById('gems').innerText = gems;
+                document.getElementById('spins').innerText = spins;
+                tg.showConfirm(prizeMsg + "\nContinue playing?", (ok) => {});
+            }, 4000);
         }
 
-        function withdraw() {
-            const wallet = prompt("Enter your SUI Address:");
-            if(wallet) tg.sendData(wallet);
+        function invite() {
+            // የቴሌግራም ሼር ሊንክ
+            tg.openTelegramLink("https://t.me/share/url?url=https://t.me/SuiGlobalRewardsBot&text=I just won $0.44 on Sui Global! Join now to get 3 free spins! 🎁");
         }
-        function openTasks() {
-            window.open("https://www.cpalead.com/your_link"); // እዚህ ጋር የ CPALead ሊንክህን አስገባ
+
+        function requestWithdraw() {
+            tg.showAlert("Minimum withdrawal: 5 SUI. You need approx. $" + (10 - balance).toFixed(2) + " more.");
         }
     </script>
 </body>
