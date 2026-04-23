@@ -2,614 +2,157 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sui Global Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sui Premium - Cheelee Style</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --gold: #ffcc00;
-            --green-dark: #0f2e1a;
-            --green-mid: #1e5631;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --radius: 28px;
-        }
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; user-select: none;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-        body {
-            background: radial-gradient(circle at 20% 20%, #2a6e3f, #0a1f14);
-            min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            padding: 12px; color: #f0f0f0; overflow-x: hidden;
-        }
-        .app-container {
-            width: 100%; max-width: 420px; background: var(--glass-bg);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); border-radius: var(--radius);
-            box-shadow: 0 25px 45px rgba(0,0,0,0.5); padding: 20px 16px 100px 16px;
-            display: flex; flex-direction: column; gap: 16px; position: relative;
-        }
-        .price-ticker {
-            background: rgba(0,0,0,0.3); border-radius: 20px;
-            padding: 6px 12px; font-size: 12px; color: var(--gold);
-            text-align: center; font-weight: 500; margin-bottom: -6px;
-        }
-        .status-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
-            border-radius: 40px; padding: 10px 18px; font-weight: 600; font-size: 14px;
-        }
-        .status-item { display: flex; align-items: center; gap: 5px; }
-        .status-emoji { font-size: 18px; }
-        .balance-highlight { color: var(--gold); font-weight: 700; }
+        :root { --gold: #ffcc00; --accent: #00f2ff; --bg: #050f08; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; }
 
-        .wheel-section { display: flex; flex-direction: column; align-items: center; }
-        .wheel-container {
-            position: relative; width: 260px; height: 260px; margin: 10px auto;
+        /* Snap Scroll Container */
+        .main-container {
+            height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory;
+            scrollbar-width: none; -ms-overflow-style: none;
         }
-        .wheel-outer {
-            width: 100%; height: 100%; border-radius: 50%;
-            position: relative; overflow: hidden;
-            box-shadow: 0 0 40px rgba(255,204,0,0.3), inset 0 0 25px rgba(0,0,0,0.5);
-        }
-        /* Dynamic conic gradient will be set via JS */
-        .wheel-bg {
-            width: 100%; height: 100%; border-radius: 50%;
-            transition: transform 4s cubic-bezier(0.15, 0.7, 0.2, 1);
-            will-change: transform;
-            background: conic-gradient(#ffcc00 0deg 0deg, #1e5631 0deg 0deg); /* placeholder */
-        }
-        .wheel-pointer {
-            position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0; border-left: 16px solid transparent;
-            border-right: 16px solid transparent; border-top: 28px solid #ffcc00;
-            filter: drop-shadow(0 6px 8px rgba(0,0,0,0.7)); z-index: 10;
-        }
-        /* Overlay for icons */
-        .wheel-icons {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            border-radius: 50%; pointer-events: none;
-        }
-        .wheel-icon {
-            position: absolute; left: 50%; top: 50%;
-            font-size: 18px; transform-origin: 0 0;
-            color: white; text-shadow: 0 0 6px black;
-            white-space: nowrap;
-        }
-        .spin-button {
-            background: linear-gradient(135deg, #ffcc00, #d4a800);
-            border: none; color: #0f2e1a; font-weight: bold; font-size: 20px;
-            padding: 14px 40px; border-radius: 40px; margin-top: 18px;
-            box-shadow: 0 6px 18px rgba(255,204,0,0.5); letter-spacing: 0.5px;
-            transition: all 0.2s; width: fit-content;
-        }
-        .spin-button:active { transform: scale(0.95); }
-        .spin-button:disabled { opacity: 0.4; transform: none; pointer-events: none; }
-        .reward-text {
-            margin-top: 12px; font-size: 18px; color: var(--gold); font-weight: 700;
-            min-height: 26px; text-align: center;
-        }
-        .out-spins {
-            text-align: center; margin-top: 5px; display: none;
-        }
-        .community-btn {
-            background: rgba(255,204,0,0.2); border: 1px solid var(--gold);
-            color: var(--gold); padding: 8px 22px; border-radius: 20px; margin-top: 6px;
-            font-weight: 600; cursor: pointer; transition: 0.2s;
-        }
-        .community-btn:active { background: rgba(255,204,0,0.4); }
-        .exchange-btn {
-            background: rgba(138, 43, 226, 0.3); border: 1px solid blueviolet;
-            color: #e0b0ff; padding: 8px 22px; border-radius: 20px; margin-top: 6px;
-            font-weight: 600; cursor: pointer; transition: 0.2s; display: none;
+        .main-container::-webkit-scrollbar { display: none; }
+
+        section {
+            height: 100vh; scroll-snap-align: start; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
-        .bottom-nav {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(12px);
-            display: flex; justify-content: space-around; padding: 12px 0 18px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            border-radius: 0 0 var(--radius) var(--radius);
+        /* Top HUD */
+        .top-hud {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            display: flex; justify-content: space-between; padding: 15px 20px; box-sizing: border-box;
         }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-            color: #aaa; font-size: 11px; font-weight: 500; transition: 0.2s;
-            background: none; border: none; cursor: pointer;
-        }
-        .nav-item.active { color: var(--gold); }
-        .nav-item span { font-size: 22px; }
+        .stat { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); font-size: 14px; font-weight: bold; }
 
-        .modal {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
-            z-index: 200; display: flex; align-items: center; justify-content: center;
-            padding: 20px; visibility: hidden; opacity: 0; transition: 0.3s;
+        /* Center Content - Section 1: The Spin */
+        .spin-card {
+            background: rgba(255, 255, 255, 0.05); width: 85%; padding: 30px 20px;
+            border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .modal.active { visibility: visible; opacity: 1; }
-        .modal-content {
-            background: linear-gradient(160deg, #1a3b2a, #0f2e1a);
-            width: 100%; max-width: 360px; border-radius: 24px; padding: 24px 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid var(--glass-border);
-            position: relative; max-height: 80vh; overflow-y: auto;
+        .wheel-container { position: relative; width: 220px; height: 220px; margin: 20px auto; }
+        .wheel {
+            width: 100%; height: 100%; border-radius: 50%; border: 6px solid var(--gold);
+            background: conic-gradient(#ff3b3b, #ffcc00, #3498db, #2ecc71, #9b59b6, #e67e22);
+            transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
         }
-        .modal-content h2 { color: var(--gold); margin-bottom: 16px; }
-        .close-modal {
-            position: absolute; top: 12px; right: 16px; background: none;
-            border: none; color: white; font-size: 22px; cursor: pointer;
+        .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 20px solid var(--gold); z-index: 10; }
+        
+        /* Section 2: Tasks & Gift */
+        .task-list { width: 85%; display: flex; flex-direction: column; gap: 15px; }
+        .task-item {
+            background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 20px;
+            display: flex; align-items: center; justify-content: space-between; border-left: 4px solid var(--accent);
         }
-        .list-item {
-            background: rgba(255,255,255,0.06); border-radius: 12px; padding: 14px;
-            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+
+        /* Action Button */
+        .action-btn {
+            background: linear-gradient(90deg, var(--gold), #ff9100);
+            border: none; padding: 15px 40px; border-radius: 50px; color: #000;
+            font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(255, 204, 0, 0.3);
         }
-        .btn-gold {
-            background: var(--gold); color: #0f2e1a; border: none; font-weight: bold;
-            padding: 12px 18px; border-radius: 30px; margin-top: 12px; cursor: pointer;
-            width: 100%; box-shadow: 0 4px 12px rgba(255,204,0,0.3);
-        }
-        .toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.85); color: white; padding: 12px 28px;
-            border-radius: 30px; z-index: 999; opacity: 0; transition: 0.3s;
-            pointer-events: none; white-space: nowrap;
-        }
+
+        /* Background Glows */
+        .glow { position: absolute; width: 300px; height: 300px; background: rgba(0, 242, 255, 0.1); border-radius: 50%; filter: blur(80px); z-index: -1; }
     </style>
 </head>
 <body>
-<div class="app-container" id="appContainer">
-    <div class="price-ticker" id="priceTicker">SUI = $0.00</div>
 
-    <div class="status-bar">
-        <div class="status-item"><span class="status-emoji">🎡</span><span id="spinsDisplay">10</span></div>
-        <div class="status-item"><span class="status-emoji">💎</span><span id="gemsDisplay">0</span></div>
-        <div class="status-item balance-highlight"><span class="status-emoji">◎</span><span id="balanceDisplay">0.000</span></div>
+    <div class="top-hud">
+        <div class="stat" style="color: var(--gold);"><i class="fas fa-coins"></i> $<span id="bal">0.00</span></div>
+        <div class="stat"><i class="fas fa-bolt" style="color: var(--accent);"></i> <span id="nrg">50</span></div>
     </div>
 
-    <div class="wheel-section" id="wheelSection">
-        <div class="wheel-container">
-            <div class="wheel-pointer"></div>
-            <div class="wheel-outer">
-                <div class="wheel-bg" id="wheelBg"></div>
-                <div class="wheel-icons" id="wheelIcons"></div>
+    <div class="main-container">
+        <section>
+            <div class="glow"></div>
+            <div class="spin-card">
+                <p style="margin: 0; opacity: 0.6; font-size: 12px; letter-spacing: 2px;">LUCKY WHEEL</p>
+                <div class="wheel-container">
+                    <div class="pointer"></div>
+                    <div class="wheel" id="wheel"></div>
+                </div>
+                <button class="action-btn" onclick="spinNow()">SPIN AGAIN</button>
             </div>
-        </div>
-        <button class="spin-button" id="spinButton">SPIN (🎡1)</button>
-        <div class="reward-text" id="rewardText"></div>
-        <div class="out-spins" id="outOfSpins">
-            <p>You're out of spins</p>
-            <button class="community-btn" id="joinCommunityBtn">Join Community +3</button>
-            <button class="exchange-btn" id="exchangeBtn">Exchange 1000 💎 = 1 Spin</button>
-        </div>
+            <p style="margin-top: 20px; font-size: 12px; opacity: 0.5;">Scroll down for Tasks ↓</p>
+        </section>
+
+        <section>
+            <div class="glow" style="background: rgba(255, 204, 0, 0.1); bottom: 10%;"></div>
+            <h2 style="margin-bottom: 20px;">Daily Rewards</h2>
+            <div class="task-list">
+                <div class="task-item">
+                    <div><b>Follow Twitter</b><br><small>+50 Gems</small></div>
+                    <i class="fab fa-twitter" style="font-size: 20px;"></i>
+                </div>
+                <div class="task-item" style="border-left-color: var(--gold);">
+                    <div><b>Invite 5 Friends</b><br><small>+$0.50 Reward</small></div>
+                    <i class="fas fa-users" style="font-size: 20px;"></i>
+                </div>
+                <div class="task-item">
+                    <div><b>Daily Check-in</b><br><small>+5 Energy</small></div>
+                    <i class="fas fa-calendar-check" style="font-size: 20px;"></i>
+                </div>
+            </div>
+            <p style="margin-top: 40px; font-size: 12px; opacity: 0.5;">Scroll up to Spin ↑</p>
+        </section>
     </div>
 
-    <div class="bottom-nav">
-        <button class="nav-item active" id="navGift"><span>🎁</span>Gift</button>
-        <button class="nav-item" id="navLeaderboard"><span>🏆</span>Leaderboard</button>
-        <button class="nav-item" id="navTeam"><span>👥</span>Team</button>
-        <button class="nav-item" id="navWallet"><span>👛</span>Wallet</button>
-    </div>
-</div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<div class="toast" id="toast"></div>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDSZ1lt-9O14sOf0PoOGDT36gT1Rusrbog",
+            authDomain: "protestant-muzmur.firebaseapp.com",
+            projectId: "protestant-muzmur",
+            databaseURL: "https://protestant-muzmur-default-rtdb.firebaseio.com",
+            appId: "1:927703829469:web:77a5913d7536e51a24c434"
+        };
 
-<!-- Modals (same as before, with some tweaks) -->
-<div class="modal" id="dailyModal">
-    <div class="modal-content">
-        <button class="close-modal" onclick="closeModal('dailyModal')">&times;</button>
-        <h2>Daily Rewards</h2>
-        <div id="dailyList"></div>
-        <button class="btn-gold" id="claimDailyBtn" onclick="claimDaily()">Watch Ad To Claim 80</button>
-        <div style="margin-top:20px; display:flex; gap:10px;">
-            <button class="btn-gold" onclick="closeModal('dailyModal');openModal('giftCodeModal')">Gift Code</button>
-            <button class="btn-gold" onclick="closeModal('dailyModal');openModal('tasksModal')">Tasks</button>
-        </div>
-    </div>
-</div>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        let tg = window.Telegram.WebApp;
+        tg.expand();
 
-<div class="modal" id="giftCodeModal">
-    <div class="modal-content">
-        <button class="close-modal" onclick="closeModal('giftCodeModal')">&times;</button>
-        <h2>Claim Rewards</h2>
-        <input type="text" id="giftCodeInput" placeholder="Enter gift code" style="width:100%;padding:12px;border-radius:20px;border:none;margin:12px 0;">
-        <button class="btn-gold" onclick="redeemCode()">Claim</button>
-        <p style="font-size:12px;margin-top:12px;">Need codes? <a href="#" style="color:var(--gold);">Join our community</a></p>
-    </div>
-</div>
+        let userId = tg.initDataUnsafe.user?.id || "guest";
+        let stats = { bal: 0.00, energy: 50 };
 
-<div class="modal" id="tasksModal">
-    <div class="modal-content">
-        <button class="close-modal" onclick="closeModal('tasksModal')">&times;</button>
-        <h2>Special Tasks</h2>
-        <div id="tasksList"></div>
-    </div>
-</div>
-
-<div class="modal" id="walletModal">
-    <div class="modal-content">
-        <button class="close-modal" onclick="closeModal('walletModal')">&times;</button>
-        <h2>Balance ◎<span id="walletBalance">0.000</span></h2>
-        <div>
-            <p>Crypto Wallet</p>
-            <button class="btn-gold" id="connectWalletBtn" onclick="connectSuiWallet()">Connect</button>
-            <p id="walletAddress" style="font-size:12px;word-break:break-all;"></p>
-        </div>
-        <div style="margin-top:20px;">
-            <p>Min. withdrawal: <b>5 SUI</b></p>
-            <button class="btn-gold" id="withdrawBtn" onclick="withdrawSui()" disabled>Withdraw 5 SUI</button>
-            <p style="font-size:11px;">Transaction fee 1% - 15%</p>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="teamModal">
-    <div class="modal-content">
-        <button class="close-modal" onclick="closeModal('teamModal')">&times;</button>
-        <h2>Team</h2>
-        <p>Your invite link:</p>
-        <input type="text" id="inviteLink" readonly style="width:100%;padding:10px;border-radius:20px;border:none;margin:10px 0;" onclick="this.select();">
-        <button class="btn-gold" onclick="shareInvite()">Share</button>
-        <h3 style="margin-top:20px;">Invited Friends (0)</h3>
-        <div id="inviteList"></div>
-    </div>
-</div>
-
-<div class="modal" id="welcomeModal">
-    <div class="modal-content" style="text-align:center;">
-        <button class="close-modal" onclick="closeModal('welcomeModal')">&times;</button>
-        <h2>Welcome</h2>
-        <p>Here's a gift to help you start 🎁</p>
-        <div style="font-size:30px;margin:20px;">+3 Spins</div>
-        <button class="btn-gold" onclick="claimWelcome()">CLAIM</button>
-    </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<script>
-    // ---------- INIT ----------
-    Telegram.WebApp.ready();
-    const tg = Telegram.WebApp;
-    tg.expand();
-    const userId = tg.initDataUnsafe?.user?.id || null;
-    const startParam = new URLSearchParams(window.location.search).get('startapp') || '';
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyDSZ1lt-9O14sOf0PoOGDT36gT1Rusrbog",
-        authDomain: "protestant-muzmur.firebaseapp.com",
-        databaseURL: "https://protestant-muzmur.firebaseio.com",
-        projectId: "protestant-muzmur",
-        storageBucket: "protestant-muzmur.firebasestorage.app",
-        messagingSenderId: "927703829469",
-        appId: "1:927703829469:web:77a5913d7536e51a24c434",
-        measurementId: "G-D27340BXGF"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // ---------- WHEEL SEGMENTS WITH PROBABILITY ----------
-    // type: 'sui' | 'gem' | 'box'
-    const WHEEL_SEGMENTS = [
-        { type:'sui', value:0.1, size:20, icon:'💰', color:'#ffcc00' },
-        { type:'sui', value:0.2, size:20, icon:'💰', color:'#ffaa00' },
-        { type:'gem', value:88, size:20, icon:'💎', color:'#1e90ff' },
-        { type:'gem', value:106, size:20, icon:'💎', color:'#4169e1' },
-        { type:'sui', value:0.1, size:20, icon:'💰', color:'#ffcc00' },
-        { type:'sui', value:0.2, size:20, icon:'💰', color:'#ffaa00' },
-        { type:'box', value:'random', size:10, icon:'🎁', color:'#da70d6' },
-        { type:'sui', value:1, size:20, icon:'💰', color:'#ffd700' },
-        { type:'gem', value:400, size:15, icon:'💎', color:'#00bfff' },
-        { type:'sui', value:0.1, size:20, icon:'💰', color:'#ffcc00' },
-        { type:'sui', value:0.2, size:20, icon:'💰', color:'#ffaa00' },
-        { type:'gem', value:88, size:20, icon:'💎', color:'#1e90ff' },
-        { type:'gem', value:106, size:20, icon:'💎', color:'#4169e1' },
-        { type:'sui', value:3, size:2, icon:'💰', color:'#ffd700' },   // rare
-        { type:'sui', value:10, size:1, icon:'💰', color:'#ffd700' },  // extremely rare
-        { type:'gem', value:2000, size:2, icon:'💎', color:'#00bfff' },// nearly impossible
-        { type:'gem', value:50, size:10, icon:'💎', color:'#1e90ff' },
-        { type:'box', value:'random', size:10, icon:'🎁', color:'#da70d6' },
-        { type:'sui', value:0.1, size:20, icon:'💰', color:'#ffcc00' },
-        { type:'sui', value:0.2, size:20, icon:'💰', color:'#ffaa00' },
-        { type:'gem', value:88, size:20, icon:'💎', color:'#1e90ff' },
-        { type:'sui', value:0.1, size:20, icon:'💰', color:'#ffcc00' },
-        { type:'sui', value:0.2, size:20, icon:'💰', color:'#ffaa00' }
-    ];
-    // Ensure total size = 360
-    const totalSize = WHEEL_SEGMENTS.reduce((s, seg) => s + seg.size, 0);
-    if (Math.abs(totalSize - 360) > 0.1) {
-        // Adjust last segment to balance
-        const diff = 360 - totalSize;
-        WHEEL_SEGMENTS[WHEEL_SEGMENTS.length-1].size += diff;
-    }
-
-    // Build segments with start/end angles
-    let cumulativeAngle = 0;
-    const segments = WHEEL_SEGMENTS.map(seg => {
-        const start = cumulativeAngle;
-        const end = start + seg.size;
-        cumulativeAngle = end;
-        return { ...seg, start, end };
-    });
-
-    // ---------- GAME STATE ----------
-    const DEFAULT = { spins:10, gems:0, balance:0.0, lastDaily:null, streak:0,
-        completedTasks:{}, inviteCount:0, invitedBy:null, walletAddress:null, welcomeClaimed:false };
-    let state = { ...DEFAULT };
-    let spinning = false;
-    let currentRotation = 0;
-    let walletConnected = false;
-
-    const spinsEl = document.getElementById('spinsDisplay');
-    const gemsEl = document.getElementById('gemsDisplay');
-    const balanceEl = document.getElementById('balanceDisplay');
-    const spinBtn = document.getElementById('spinButton');
-    const wheelBg = document.getElementById('wheelBg');
-    const rewardEl = document.getElementById('rewardText');
-    const outOfSpinsDiv = document.getElementById('outOfSpins');
-    const exchangeBtn = document.getElementById('exchangeBtn');
-    const toastEl = document.getElementById('toast');
-
-    // ---------- RENDER WHEEL ----------
-    function renderWheel() {
-        // Conic gradient
-        let gradientParts = [];
-        segments.forEach(seg => {
-            gradientParts.push(`${seg.color} ${seg.start}deg ${seg.end}deg`);
+        // Firebase Data Loading
+        const userRef = ref(db, 'users/' + userId);
+        get(userRef).then(snap => {
+            if(snap.exists()) stats = snap.val();
+            updateUI();
         });
-        wheelBg.style.background = `conic-gradient(${gradientParts.join(',')})`;
 
-        // Icon overlay
-        const iconsContainer = document.getElementById('wheelIcons');
-        iconsContainer.innerHTML = '';
-        segments.forEach(seg => {
-            const centerAngle = seg.start + seg.size/2;
-            const iconDiv = document.createElement('div');
-            iconDiv.className = 'wheel-icon';
-            iconDiv.textContent = seg.icon;
-            // Position: rotate around center
-            iconDiv.style.transform = `rotate(${centerAngle}deg) translate(0, -110px) rotate(-${centerAngle}deg)`;
-            iconsContainer.appendChild(iconDiv);
-        });
-    }
-    renderWheel();
+        let rotation = 0;
+        window.spinNow = function() {
+            if(stats.energy < 5) { tg.showAlert("Energy low! Wait or Invite friends."); return; }
+            
+            stats.energy -= 5;
+            rotation += 1800 + Math.random() * 360;
+            document.getElementById('wheel').style.transform = `rotate(${rotation}deg)`;
+            tg.HapticFeedback.impactOccurred('medium');
 
-    // ---------- SUI PRICE ----------
-    async function fetchSuiPrice() {
-        try {
-            const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=sui&vs_currencies=usd');
-            const data = await res.json();
-            const price = data.sui.usd;
-            document.getElementById('priceTicker').textContent = `SUI = $${price.toFixed(4)}`;
-        } catch(e) {}
-    }
-    fetchSuiPrice();
-    setInterval(fetchSuiPrice, 30000);
+            setTimeout(() => {
+                let prize = (Math.random() * 0.05).toFixed(2);
+                stats.bal = parseFloat(stats.bal) + parseFloat(prize);
+                set(userRef, stats);
+                updateUI();
+                tg.showAlert("Congratulations! You won $" + prize);
+            }, 4000);
+        };
 
-    // ---------- UI UPDATE ----------
-    function updateUI() {
-        spinsEl.textContent = state.spins;
-        gemsEl.textContent = state.gems;
-        balanceEl.textContent = state.balance.toFixed(3);
-        document.getElementById('walletBalance').textContent = state.balance.toFixed(3);
-        const canSpin = state.spins >= 1 && !spinning;
-        spinBtn.disabled = !canSpin;
-        outOfSpinsDiv.style.display = state.spins >= 1 ? 'none' : 'block';
-        exchangeBtn.style.display = state.gems >= 1000 ? 'inline-block' : 'none';
-        document.getElementById('withdrawBtn').disabled = state.balance < 5 || !walletConnected;
-    }
-
-    function saveAll() {
-        localStorage.setItem('suiGlobalV2', JSON.stringify(state));
-        if(userId) db.ref('users/' + userId).set({...state, lastUpdated:Date.now()});
-        updateUI();
-    }
-
-    function loadLocal() {
-        const s = localStorage.getItem('suiGlobalV2');
-        if(s) { try { state = {...DEFAULT, ...JSON.parse(s)}; } catch(e){} }
-        updateUI();
-    }
-
-    function loadFB() {
-        if(!userId) { loadLocal(); return; }
-        db.ref('users/' + userId).once('value').then(snap => {
-            if(snap.val()) state = {...DEFAULT, ...snap.val()};
-            saveAll();
-            if(!state.welcomeClaimed) setTimeout(()=>openModal('welcomeModal'), 600);
-        }).catch(() => loadLocal());
-    }
-
-    function toast(msg, d=2000) {
-        toastEl.textContent = msg; toastEl.style.opacity = '1';
-        setTimeout(() => toastEl.style.opacity = '0', d);
-    }
-
-    function haptic() {
-        if(tg.HapticFeedback) { tg.HapticFeedback.notificationOccurred('success'); tg.HapticFeedback.impactOccurred('heavy'); }
-    }
-
-    // ---------- SPIN LOGIC ----------
-    function spinWheel() {
-        if(spinning || state.spins < 1) return;
-        state.spins--;
-        spinning = true; saveAll(); rewardEl.textContent = '';
-
-        // Random target angle (uniform distribution → small segments are rare)
-        const rand = Math.random() * 360;
-        let prizeSegment = segments[0];
-        for(const seg of segments) {
-            if(rand >= seg.start && rand < seg.end) { prizeSegment = seg; break; }
+        function updateUI() {
+            document.getElementById('bal').innerText = stats.bal.toFixed(2);
+            document.getElementById('nrg').innerText = stats.energy;
         }
-
-        // Target angle within segment
-        const targetAngle = prizeSegment.start + Math.random() * prizeSegment.size;
-        const extraSpins = 5 * 360;
-        const delta = extraSpins + (360 - targetAngle - (currentRotation % 360));
-        currentRotation += delta;
-
-        wheelBg.style.transition = 'transform 4s cubic-bezier(0.15, 0.7, 0.2, 1)';
-        wheelBg.style.transform = `rotate(${currentRotation}deg)`;
-
-        setTimeout(() => {
-            // Award prize based on type
-            if(prizeSegment.type === 'sui') {
-                state.balance += prizeSegment.value;
-                toast(`+${prizeSegment.value} SUI`);
-            } else if(prizeSegment.type === 'gem') {
-                state.gems += prizeSegment.value;
-                toast(`+${prizeSegment.value} 💎`);
-            } else if(prizeSegment.type === 'box') {
-                // Random: 50% chance 2 spins, 50% chance 500 gems
-                if(Math.random() < 0.5) {
-                    state.spins += 2;
-                    toast(`Mystery box: +2 Spins`);
-                } else {
-                    state.gems += 500;
-                    toast(`Mystery box: +500 💎`);
-                }
-            }
-            haptic();
-            rewardEl.textContent = `🎉 ${prizeSegment.icon} ${prizeSegment.type==='sui' ? prizeSegment.value+' SUI' : prizeSegment.type==='gem' ? prizeSegment.value+' Gems' : 'Mystery Box'}`;
-            spinning = false;
-            saveAll();
-        }, 4100);
-    }
-    spinBtn.addEventListener('click', spinWheel);
-
-    // ---------- EXCHANGE 1000 GEMS FOR 1 SPIN ----------
-    exchangeBtn.addEventListener('click', () => {
-        if(state.gems >= 1000) {
-            state.gems -= 1000;
-            state.spins += 1;
-            saveAll();
-            toast('Exchanged 1000 💎 for 1 Spin!');
-        }
-    });
-
-    // Community bonus
-    document.getElementById('joinCommunityBtn').addEventListener('click', () => {
-        state.spins += 3; saveAll(); toast('+3 Spins!');
-    });
-
-    // Welcome gift
-    window.claimWelcome = function() {
-        state.spins += 3; state.welcomeClaimed = true; saveAll();
-        closeModal('welcomeModal'); toast('+3 Spins claimed!');
-    };
-
-    // Daily rewards
-    const dailyRewards = [80,80,200,90,90,90,6000];
-    function renderDaily() {
-        const list = document.getElementById('dailyList');
-        list.innerHTML = dailyRewards.map((r,i)=>`<div class="list-item"><span>Day ${i+1}</span><span style="color:var(--gold);">${i===6?'Up to ':''}+${r}</span></div>`).join('');
-        const today = new Date().toDateString();
-        const can = state.lastDaily !== today;
-        document.getElementById('claimDailyBtn').disabled = !can;
-        document.getElementById('claimDailyBtn').textContent = can ? 'Watch Ad To Claim 80' : 'Claimed Today';
-    }
-    window.claimDaily = function() {
-        const today = new Date().toDateString();
-        if(state.lastDaily === today) { toast('Already claimed'); return; }
-        state.streak = (state.streak % 7) + 1;
-        state.spins += dailyRewards[state.streak-1];
-        state.lastDaily = today; saveAll(); renderDaily();
-        toast(`+${dailyRewards[state.streak-1]} Spins (Day ${state.streak})`);
-    };
-
-    // Gift code
-    window.redeemCode = function() {
-        const code = document.getElementById('giftCodeInput').value.trim();
-        if(!code) { toast('Enter a code'); return; }
-        if(code === 'SUI100') { state.spins += 100; state.gems += 50; saveAll(); toast('+100 Spins, 50 Gems'); }
-        else toast('Invalid code');
-    };
-
-    // Tasks
-    const taskList = [
-        { name:'Join CryptoEarn Hub', reward:200, url:'https://t.me/cryptoearnhub' },
-        { name:'Find online work on "Work For You"', reward:200, url:'https://t.me/workforyou' },
-        { name:'Boost EarnCraft Channel', reward:2000, url:'https://t.me/earncraft' },
-        { name:'We pay USDT for clicks', reward:160, url:'#' },
-        { name:'Play LuckySlots 5 times', reward:50, url:'#' },
-        { name:'Play LuckySlots 100 times', reward:150, url:'#' }
-    ];
-    function renderTasks() {
-        const html = taskList.map((t,i)=>`
-            <div class="list-item">
-                <span>${t.name}</span>
-                <div><span style="color:var(--gold);">${t.reward}</span>
-                <button class="btn-gold" style="width:auto;padding:6px 12px;margin-left:8px;" onclick="doTask(${i})">GO</button></div>
-            </div>`).join('');
-        document.getElementById('tasksList').innerHTML = html;
-    }
-    window.doTask = function(i) {
-        if(state.completedTasks[i]) { toast('Already done'); return; }
-        tg.openLink(taskList[i].url);
-        state.completedTasks[i] = true;
-        state.spins += taskList[i].reward;
-        saveAll(); renderTasks(); toast(`+${taskList[i].reward} Spins`);
-    };
-
-    // Wallet
-    window.connectSuiWallet = function() {
-        toast('Sui Wallet extension required (simulated)');
-        state.walletAddress = '0x1234...abcd'; walletConnected = true;
-        document.getElementById('walletAddress').textContent = state.walletAddress;
-        document.getElementById('connectWalletBtn').textContent = 'Connected';
-        saveAll();
-    };
-    window.withdrawSui = function() {
-        if(state.balance < 5 || !walletConnected) return;
-        state.balance -= 5;
-        db.ref('withdrawals').push({ userId, address:state.walletAddress, amount:5, timestamp:Date.now() });
-        saveAll(); toast('Withdrawal request sent! 5 SUI will be transferred.');
-    };
-
-    // Team
-    function genInviteLink() {
-        const botName = tg.initDataUnsafe?.bot?.username || 'your_bot';
-        document.getElementById('inviteLink').value = `https://t.me/${botName}?startapp=${userId}`;
-    }
-    window.shareInvite = function() {
-        const link = document.getElementById('inviteLink').value;
-        tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=Join%20Sui%20Global%20Premium!`);
-    };
-    if(startParam && !state.invitedBy) {
-        state.invitedBy = startParam;
-        db.ref('users/' + startParam).transaction(user => {
-            if(user) { user.spins = (user.spins||0)+50; user.inviteCount = (user.inviteCount||0)+1; }
-            return user;
-        });
-        saveAll();
-    }
-
-    // Modal controls
-    window.openModal = id => document.getElementById(id).classList.add('active');
-    window.closeModal = id => document.getElementById(id).classList.remove('active');
-
-    // Bottom nav
-    document.getElementById('navGift').addEventListener('click', ()=>{
-        openModal('dailyModal'); renderDaily();
-    });
-    document.getElementById('navLeaderboard').addEventListener('click', ()=> toast('Leaderboard coming soon'));
-    document.getElementById('navTeam').addEventListener('click', ()=>{
-        openModal('teamModal'); genInviteLink();
-        document.querySelector('#teamModal h3').innerText = `Invited Friends (${state.inviteCount||0})`;
-    });
-    document.getElementById('navWallet').addEventListener('click', ()=>{
-        openModal('walletModal'); updateUI();
-    });
-
-    // Energy regen
-    setInterval(() => {
-        if(state.spins < 100 && !spinning) { state.spins = Math.min(100, state.spins+1); saveAll(); }
-    }, 600000);
-
-    // Init
-    loadFB();
-    setInterval(fetchSuiPrice, 30000);
-    updateUI();
-</script>
+    </script>
 </body>
 </html>
